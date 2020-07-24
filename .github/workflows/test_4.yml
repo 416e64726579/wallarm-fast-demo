@@ -1,0 +1,61 @@
+name: FAST DEMO testing (4 containers)
+env:
+  TEST_RUN_DESC: 'FAST Performance test (4 containers)'
+  WALLARM_API_TOKEN: ${{ secrets.WALLARM_API_TOKEN }}
+  WALLARM_API_HOST: ${{ secrets.WALLARM_API_HOST }}
+  GITHUB_RUN_ID: ${{ github.run_id }}
+
+on:
+  # schedule:
+  #   - cron:  '0 7 * * *'
+  push:
+    branches:
+      - master
+
+jobs:
+
+  testing:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-python@v1.1.1
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Containers coming up
+      env:
+        CI_MODE: recording
+      run: docker-compose up --build -d fast nowasp
+
+    - name: Recording tests
+      if: success()
+      run: docker-compose run --service-ports postman
+
+    - name: Running security tests
+      env:
+        CI_MODE: testing
+        TEST_RUN_URI: 'http://nowasp:80'
+      if: success()
+      run: |
+        sleep 10
+        docker-compose up --scale fast=4 --scale nowasp=4 fast nowasp | ./finish.py
+
+    - name: Sending test results to the messenger
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+      if: always()
+      run: python notify.py
+
+    - name: Gathering artifacts
+      if: always()
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: reports
+        path: /opt/reports/

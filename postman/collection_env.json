@@ -1,0 +1,19 @@
+{
+	"id": "3c626792-4190-424d-bec0-ebfa87ea5418",
+	"name": "Mutillidae II env",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "nowasp",
+			"enabled": true
+		},
+		{
+			"key": "security_level",
+			"value": "0",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2020-02-25T08:23:33.377Z",
+	"_postman_exported_using": "Postman/7.16.1"
+}

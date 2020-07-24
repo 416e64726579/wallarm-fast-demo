@@ -1,0 +1,56 @@
+---
+version: '3.7'
+services:
+
+  fast:
+    image: wallarm/fast:latest
+    restart: on-failure
+    environment:
+      WALLARM_API_TOKEN: ${WALLARM_API_TOKEN}
+      WALLARM_API_HOST: ${WALLARM_API_HOST}
+      ALLOWED_HOSTS: nowasp
+      CI_MODE: ${CI_MODE}
+      BUILD_ID: ${GITHUB_RUN_ID}
+      TEST_RUN_URI: ${TEST_RUN_URI}
+      TEST_RUN_DESC: ${TEST_RUN_DESC}
+      WORKERS: 8
+      PROCESSES: 2
+    depends_on:
+      - "nowasp"
+    volumes:
+       - /opt/reports:/opt/reports
+    networks:
+      main:
+        aliases:
+          - fast
+
+  nowasp:
+    image: i2213010/nowasp:latest
+    restart: on-failure
+    networks:
+      main:
+        aliases:
+          - nowasp
+
+  postman:
+    image: postman
+    build:
+      context: ./postman
+      dockerfile: Dockerfile
+    restart: on-failure
+    depends_on:
+      - "fast"
+      - "nowasp"
+    environment:
+      http_proxy: http://fast:8080
+      https_proxy: https://fast:8080
+    volumes:
+      - ./postman:/etc/postman
+    entrypoint: ["./wait-for.sh", "nowasp:80", "--", "newman", "run", "/etc/postman/collection.json", "--environment=/etc/postman/collection_env.json"]
+    networks:
+      main:
+        aliases:
+          - postman
+
+networks:
+  main:
