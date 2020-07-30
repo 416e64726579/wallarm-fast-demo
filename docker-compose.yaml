@@ -13,6 +13,7 @@ services:
       BUILD_ID: ${GITHUB_RUN_ID}
       TEST_RUN_URI: ${TEST_RUN_URI}
       TEST_RUN_DESC: ${TEST_RUN_DESC}
+      TEST_RUN_POLICY_ID: 309
       WORKERS: 8
       PROCESSES: 2
     depends_on:
