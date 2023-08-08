@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.18.3
 LABEL version 1.1
 LABEL description "Mutillidae Container with NGINX"
 MAINTAINER Edoardo Rosa <edoardo [dot] rosa90 [at] gmail [dot] com> (edoz90)
